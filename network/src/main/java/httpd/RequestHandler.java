@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class RequestHandler extends Thread {
 	private Socket socket;
@@ -54,10 +55,12 @@ public class RequestHandler extends Thread {
 			}
 
 			consoleLog(request);
+
 			String[] tokens = request.split(" ");
 			if ("GET".equals(tokens[0])) {
 				responseStaticResources(os, tokens[1], tokens[2]);
 			} else {
+				errorResponse(os, 400, "Bad Request", tokens[2]);
 				// methods: POST, DELETE, PUT, HEAD, CONNECT, ...
 				// SimpleHttpServer에서는 무시(400 Bad Request)
 			}
@@ -86,6 +89,7 @@ public class RequestHandler extends Thread {
 		File file = new File("./webapp" + url);
 		if (!file.exists()) {
 			// 404 response -> 과제 부분
+			errorResponse(os, 404, "File Not Found", protocol);
 			return;
 		}
 
@@ -106,5 +110,16 @@ public class RequestHandler extends Thread {
 
 	public void consoleLog(String message) {
 		System.out.println("[RequestHandler#" + getId() + "] " + message);
+	}
+
+	private void errorResponse(OutputStream os, int errorCode, String message, String protocol) throws IOException {
+		File file = new File("./webapp/error/" + errorCode + ".html");
+		byte[] body = Files.readAllBytes(file.toPath());
+		String contentType = Files.probeContentType(file.toPath());
+
+		os.write(("Content-Type:" + contentType + "; charset=utf-8\n").getBytes("UTF-8"));
+		os.write((protocol + " " + errorCode + " " + message + "\n").getBytes("UTF-8"));
+		os.write(("\n").getBytes());
+		os.write(body);
 	}
 }
