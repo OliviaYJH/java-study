@@ -20,7 +20,7 @@ public class EchoServer {
 			serverSocket = new ServerSocket();
 
 			serverSocket.bind(new InetSocketAddress("0.0.0.0", PORT));
-			log("연결 기다림 starts...[port:" + PORT + "]");
+			log("연결 기다림 starts...[" + EchoClient.SERVER_IP + ":" + PORT + "]");
 
 			Socket socket = serverSocket.accept();
 
