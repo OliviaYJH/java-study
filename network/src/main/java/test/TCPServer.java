@@ -2,6 +2,7 @@ package test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -29,27 +30,55 @@ public class TCPServer {
 			Socket socket = serverSocket.accept(); // blocking - 멈춘다. 밑으로 내려가지 않는다. Client로부터 소켓 연결이 올 때까지 대기(accept) 함.
 			// data 통신용 socket
 
-			System.out.println("연결 성공"); // blocking이 잘 되는지 확인
+			try {
+				InetSocketAddress inetRemoteSocketAddress = (InetSocketAddress) socket.getRemoteSocketAddress(); // 반대편쪽,
+				// 다운캐스팅
+				String remoteHostAddress = inetRemoteSocketAddress.getAddress().getHostAddress();
+				int remotePort = inetRemoteSocketAddress.getPort();
 
-			// 4. IO Stream 객체 받아오기
-			InputStream is = socket.getInputStream();
+				System.out.println(
+						"[server] connected by client[ip번호: " + remoteHostAddress + ", port번호: " + remotePort + "]");
 
-			// 5. 데이터 읽기
-			// byte로 읽어서 utf-8로 인코딩해야 함.
-			byte[] buffer = new byte[256];
-			int readByteCount = is.read(buffer); // blocking(accept)
-			if (readByteCount == -1) {
-				// file인 경우에는 끝이지만, socket인 경우에는 닫음을 의미
-				// closed by client
+				System.out.println("연결 성공"); // blocking이 잘 되는지 확인
 
-				System.out.println("[server] closed by client");
-				return;
+				// 4. IO Stream 객체 받아오기
+				InputStream is = socket.getInputStream();
+				OutputStream os = socket.getOutputStream();
+
+				while (true) {
+					// 5. 데이터 읽기
+					// byte로 읽어서 utf-8로 인코딩해야 함.
+					byte[] buffer = new byte[256];
+					int readByteCount = is.read(buffer); // blocking(accept)
+					if (readByteCount == -1) {
+						// file인 경우에는 끝이지만, socket인 경우에는 닫음을 의미
+						// closed by client
+
+						System.out.println("[server] closed by client");
+						break;
+					}
+
+					// 인코딩
+					String data = new String(buffer, 0, readByteCount, "UTF-8"); // 읽을 byte를 직접 지정 중 - 처음부터
+																					// readByteCount개
+																					// 까지
+					System.out.println("[server] receive:" + data);
+					
+					// 6. 데이터 쓰기 
+					os.write(data.getBytes("utf-8")); // string -> byte로 변
+					
+				}
+			} catch (IOException e) {
+				System.out.println("error:" + e);
+			} finally {
+				try {
+					if (socket != null && !socket.isClosed()) {
+						socket.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-
-			// 인코딩
-			String data = new String(buffer, 0, readByteCount, "UTF-8"); // 읽을 byte를 직접 지정 중 - 처음부터 readByteCount개 까지
-			System.out.println("[server] receive:" + data);
-
 		} catch (IOException e) {
 			System.out.println("[server] error:" + e);
 		} finally {
