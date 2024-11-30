@@ -17,7 +17,7 @@ public class ChatServerThread extends Thread {
 	private Socket socket;
 	private List<PrintWriter> printWriters = null;
 	private PrintWriter printWriter = null;
-	
+
 	public ChatServerThread(Socket socket, List<PrintWriter> printWriters) {
 		this.socket = socket;
 		this.printWriters = printWriters;
@@ -35,22 +35,22 @@ public class ChatServerThread extends Thread {
 		} finally {
 			try {
 				// 3. 요청처리
-				while(true) {
+				while (true) {
 					String request = br.readLine();
-					
-					if(request == null) {
+
+					if (request == null) {
 						ChatServer.log("클라이언트로부터 연결 끊김");
 						doQuit(printWriter);
 						break;
 					}
-					
-					// 4. 프로토콜 분석 
+
+					// 4. 프로토콜 분석
 					String[] tokens = request.split(":");
-					if("join".equals(tokens[0])) {
+					if ("join".equals(tokens[0])) {
 						doJoin(tokens[1], printWriter);
-					} else if("MSG".equals(tokens[0])) {
+					} else if ("msg".equals(tokens[0])) {
 						doMessage(tokens[1]);
-					} else if("quit".equals(tokens[0])) {
+					} else if ("quit".equals(tokens[0])) {
 						doQuit(printWriter);
 					} else {
 						ChatServer.log("error: 알 수 없는 요청(" + tokens[0] + ")");
@@ -58,22 +58,22 @@ public class ChatServerThread extends Thread {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-			}  
+			}
 		}
 
 	}
-	
-	private void doQuit(Writer writer) {
-		String data = nickName + "님이 퇴장하셨습니다.";
-		broadcast(data);
+
+	private void doQuit(Writer writer) { // 나는 안떠야 하고 상대방만 문구가 떠야 함. 
 		removeWriter(writer);
+		//this.interrupt();
+		String data = nickName + "님이 퇴장 하였습니다.";
+		broadcast(data);
 	}
 
 	private void removeWriter(Writer writer) {
-		synchronized(printWriters) {
+		synchronized (printWriters) {
 			printWriters.remove(writer);
 		}
-		
 	}
 
 	private void doMessage(String string) {
@@ -84,29 +84,29 @@ public class ChatServerThread extends Thread {
 	private void doJoin(String nickName, PrintWriter writer) {
 		this.nickName = decoding(nickName);
 
-		String data = this.nickName + "님이 참여하셨습니다. 즐거운 채팅 되세요";
+		String data = this.nickName + "님이 입장했습니다.";
 		broadcast(data);
-		
-		addWriter(writer); // 참여자 추가 
-		
+
+		addWriter(writer); // 참여자 추가
+
 		// ack
-		writer.println(data);
+		writer.println("join:ok");
 		writer.flush();
 	}
-	
+
 	private String decoding(String str) {
-        return new String(Base64.getDecoder().decode(str));
-    }
+		return new String(Base64.getDecoder().decode(str));
+	}
 
 	private void addWriter(PrintWriter writer) { // 참가자 추가
-		synchronized(printWriters) {
+		synchronized (printWriters) {
 			printWriters.add(writer);
 		}
 	}
-	
-	private void broadcast(String data) { // 내용 추가 
-		synchronized(printWriters) {
-			for(Writer writer: printWriters) {
+
+	private void broadcast(String data) {
+		synchronized (printWriters) {
+			for (Writer writer : printWriters) {
 				PrintWriter printWriter = (PrintWriter) writer;
 				printWriter.println(data);
 				printWriter.flush();

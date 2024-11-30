@@ -47,7 +47,7 @@ public class ChatClient {
 
 				if(message != "") { // 그냥 enter 치거나 spacebar만 쳤을 경우 
 					// 메시지 처리
-					pw.println("MSG:" + encoding(message));
+					pw.println("msg:" + encoding(message));
 					pw.flush();
 				}
 				
