@@ -43,7 +43,7 @@ public class ChatServer {
 					serverSocket.close();
 				}
 			} catch(IOException e) {
-				e.printStackTrace();
+				log("error:" + e);
 			}
 		}
 

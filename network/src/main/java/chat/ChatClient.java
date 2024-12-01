@@ -22,8 +22,14 @@ public class ChatClient {
 			socket.connect(new InetSocketAddress("0.0.0.0", ChatServer.PORT));
 
 			// join 프로토콜
-			System.out.print("닉네임>>");
-			String nickName = scanner.nextLine();
+			String nickName = "";
+			while (true) {
+				System.out.print("닉네임>>");
+				nickName = scanner.nextLine();
+				if (!"".equals(nickName.trim())) {
+					break;
+				}
+			}
 			String encodedNickName = Base64.getEncoder().encodeToString(nickName.getBytes());
 
 			// ChatClientReceiveThread 시작
@@ -45,12 +51,11 @@ public class ChatClient {
 					break;
 				}
 
-				if(message != "") { // 그냥 enter 치거나 spacebar만 쳤을 경우 
+				if (message != "") {
 					// 메시지 처리
-					pw.println("msg:" + encoding(message));
+					pw.println("msg:" + Base64.getEncoder().encodeToString(message.getBytes()));
 					pw.flush();
 				}
-				
 
 			}
 		} catch (IOException ex) {
@@ -63,16 +68,12 @@ public class ChatClient {
 				if (socket != null && !socket.isClosed())
 					socket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log("error:" + e);
 			}
 		}
 	}
 
 	public static void log(String message) {
 		System.out.println("[Chat Server] " + message);
-	}
-
-	private static String encoding(String str) {
-		return Base64.getEncoder().encodeToString(str.getBytes());
 	}
 }

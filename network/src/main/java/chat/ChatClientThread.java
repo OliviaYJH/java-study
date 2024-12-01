@@ -14,7 +14,7 @@ public class ChatClientThread extends Thread {
 		try {
 			this.br = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			ChatClient.log("error:" + e);
 		}
 	}
 
@@ -29,14 +29,14 @@ public class ChatClientThread extends Thread {
 				
 				if(data == null || data == "") {
 					ChatClient.log("서버가 닫혔습니다.");
-				} else if("join:ok".equals(data)) {
+				} else if("join".equals(data)) {
 					System.out.println("입장하였습니다. 즐거운 채팅 되세요.");
 				} else {
 					System.out.println(data);
 				}
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				ChatClient.log("error:" + e);
 			} 
 		}
 	}

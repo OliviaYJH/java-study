@@ -31,7 +31,7 @@ public class ChatServerThread extends Thread {
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 			this.printWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 		} catch (IOException e) {
-			e.printStackTrace();
+			ChatServer.log("error:" + e);
 		} finally {
 			try {
 				// 3. 요청처리
@@ -40,7 +40,7 @@ public class ChatServerThread extends Thread {
 
 					if (request == null) {
 						ChatServer.log("클라이언트로부터 연결 끊김");
-						doQuit(printWriter);
+						doQuitChat();
 						break;
 					}
 
@@ -57,32 +57,28 @@ public class ChatServerThread extends Thread {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				ChatServer.log("error:" + e);
 			}
 		}
 
 	}
 
-	private void doQuit(Writer writer) { // 나는 안떠야 하고 상대방만 문구가 떠야 함. 
-		removeWriter(writer);
-		//this.interrupt();
+	private void doQuitChat() {		
 		String data = nickName + "님이 퇴장 하였습니다.";
 		broadcast(data);
 	}
-
-	private void removeWriter(Writer writer) {
-		synchronized (printWriters) {
-			printWriters.remove(writer);
-		}
+	
+	private void doQuit(Writer writer) {
+		removeWriter(printWriter);
 	}
 
 	private void doMessage(String string) {
-		String data = nickName + " : " + decoding(string);
+		String data = nickName + " : " + new String(Base64.getDecoder().decode(string));
 		broadcast(data);
 	}
 
 	private void doJoin(String nickName, PrintWriter writer) {
-		this.nickName = decoding(nickName);
+		this.nickName = new String(Base64.getDecoder().decode(nickName));
 
 		String data = this.nickName + "님이 입장했습니다.";
 		broadcast(data);
@@ -90,12 +86,8 @@ public class ChatServerThread extends Thread {
 		addWriter(writer); // 참여자 추가
 
 		// ack
-		writer.println("join:ok");
+		writer.println("join");
 		writer.flush();
-	}
-
-	private String decoding(String str) {
-		return new String(Base64.getDecoder().decode(str));
 	}
 
 	private void addWriter(PrintWriter writer) { // 참가자 추가
@@ -104,6 +96,12 @@ public class ChatServerThread extends Thread {
 		}
 	}
 
+	private void removeWriter(Writer writer) {
+		synchronized(printWriters) {
+			printWriters.remove(writer);
+		}
+	}
+	
 	private void broadcast(String data) {
 		synchronized (printWriters) {
 			for (Writer writer : printWriters) {
