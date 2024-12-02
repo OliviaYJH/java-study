@@ -33,8 +33,7 @@ public class ChatClient {
 			String encodedNickName = Base64.getEncoder().encodeToString(nickName.getBytes());
 
 			// ChatClientReceiveThread 시작
-			var chatThread = new ChatClientThread(socket);
-			chatThread.start();
+			new ChatClientThread(socket).start();
 
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
 			pw.println("join:" + encodedNickName);

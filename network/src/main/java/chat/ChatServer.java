@@ -18,13 +18,13 @@ public class ChatServer {
 		List<PrintWriter> listWriters = new ArrayList<PrintWriter>();
 
 		try {
-			// 1. 서버 소켓 생성 
+			// 1. 서버 소켓 생성
 			serverSocket = new ServerSocket();
-			
+
 			// 2. 바인딩
 			String hostAddress = InetAddress.getLocalHost().getHostAddress();
 			serverSocket.bind(new InetSocketAddress("0.0.0.0", PORT));
-			log("start.. [" + hostAddress + ":" + PORT + "]");
+			log("start.. [ hostAddress : " + hostAddress + ", port : " + PORT + " ]");
 			
 			// 3. 요청 대기
 			while (true) {
@@ -39,10 +39,10 @@ public class ChatServer {
 			log("error:" + e);
 		} finally {
 			try {
-				if(serverSocket != null && !serverSocket.isClosed()) {
+				if (serverSocket != null && !serverSocket.isClosed()) {
 					serverSocket.close();
 				}
-			} catch(IOException e) {
+			} catch (IOException e) {
 				log("error:" + e);
 			}
 		}
