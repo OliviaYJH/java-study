@@ -16,6 +16,9 @@ public class TCPServer {
 		try {
 			// 1. 서버 소켓 생성
 			serverSocket = new ServerSocket();
+			
+			// 1-1. FIN_WAIT -> TIME_WAIT 상태에서도 소켓의 포트 할당이 가능하도록 하는 옵션
+			serverSocket.setReuseAddress(true);
 
 			// 2. 바인딩(binding)
 			/*

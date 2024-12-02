@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class TCPClient {
 
@@ -15,6 +16,25 @@ public class TCPClient {
 		try {
 			// 1. 소켓 새성
 			socket = new Socket();
+
+			// 1-1. 소켓 버퍼 사이즈 확인
+			int rcvBufferSize = socket.getReceiveBufferSize();
+			int sndBufferSize = socket.getSendBufferSize();
+			System.out.println(rcvBufferSize + ": " + sndBufferSize);
+
+			// 1-2. 소켓버퍼 사이즈 변경
+			socket.setReceiveBufferSize(1024 * 10);
+			socket.setSendBufferSize(1024 * 10);
+
+			rcvBufferSize = socket.getReceiveBufferSize();
+			sndBufferSize = socket.getSendBufferSize();
+			System.out.println(rcvBufferSize + ": " + sndBufferSize);
+
+			// 1-3. SO_NODELAY(Nagle Algorithm OFF)
+			socket.setTcpNoDelay(true);
+
+			// 1-4. SO_TIME)UT
+			socket.setSoTimeout(3000);
 
 			// 2. 서버 연결
 			socket.connect(new InetSocketAddress("0.0.0.0", 6000)); // ip, port번호 - port 번호는 server와 동일하게
@@ -39,6 +59,17 @@ public class TCPClient {
 			data = new String(buffer, 0, readByteCount, "utf-8");
 			System.out.println("[client] received:" + data);
 
+			// 6. 데이터 쓰기 
+			// SO_TIMEOUT Test 
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			os.write(data.getBytes("utf-8"));
+			
+		} catch (SocketTimeoutException e) {
+			System.out.println("[client] TimeOut!!!");
 		} catch (SocketException e) {
 			System.out.println("[client] Socket Exception:" + e);
 		} catch (IOException e) {
