@@ -119,7 +119,7 @@ public class ChatWindow {
 			finish();
 		}
 
-		if (message != "") {
+		if (!"".equals(message)) {
 			pw.println("msg:" + Base64.getEncoder().encodeToString(message.getBytes()));
 			pw.flush();
 		}
