@@ -86,7 +86,7 @@ public class ChatServerThread extends Thread {
 		addWriter(writer); // 참여자 추가
 
 		// ack
-		writer.println("join");
+		writer.println("join:ok");
 		writer.flush();
 	}
 

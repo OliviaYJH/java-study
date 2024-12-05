@@ -29,7 +29,7 @@ public class ChatClientThread extends Thread {
 				
 				if(data == null || data == "") {
 					ChatClient.log("서버가 닫혔습니다.");
-				} else if("join".equals(data)) {
+				} else if("join:ok".equals(data)) {
 					System.out.println("입장하였습니다. 즐거운 채팅 되세요.");
 				} else {
 					System.out.println(data);
